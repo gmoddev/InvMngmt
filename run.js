@@ -3,9 +3,11 @@ const fs = require('fs');
 const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
 
+// Express Config
 const app = express();
 const PORT = 3000;
 
+// Paths
 const itemsFilePath = path.join(__dirname, 'config', 'items.json');
 const dbFilePath = path.join(__dirname, 'inventory.db');
 
