@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/dark-mode.js"></script>
+    <title>Inventory Client</title>
+</head>
+<body>
+    
+    <div class="container">
+        <div class="color-bar" id="color-bar"></div>
+        <div class="flex-grid">
+            <% items.forEach(function(item) { %>
+                <div class="item-box">
+                    <h3><%= item.name %></h3>
+                    <p>Current Quantity: <span id="quantity-<%= item.id %>"><%= item.quantity %></span></p>
+                    <div class="action-buttons">
+                        <button type="button" class="square-btn add-btn" onclick="updateQuantity('<%= item.name %>', 'add', <%= item.id %>)">Add</button>
+                        <button type="button" class="square-btn remove-btn" onclick="updateQuantity('<%= item.name %>', 'remove', <%= item.id %>)">Remove</button>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+    </div>
+    
+    <div class="toggle-container">
+        <label class="switch">
+            <input type="checkbox" id="darkModeToggle">
+            <span class="slider"></span>
+        </label>
+        <span id="toggleLabel">Dark Mode</span>
+    </div>
+    
+    <script>
+        function updateQuantity(name, action, id) {
+            fetch('/inventory/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name, action, color: '<%= color %>' })
+            }).then(response => response.json()).then(data => {
+                if (data.success) {
+                    document.getElementById(`quantity-${id}`).textContent = data.newQuantity;
+                } else {
+                    alert(data.message);
+                }
+            }).catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function updateColorBar(color) {
+            const colorBar = document.getElementById('color-bar');
+            colorBar.style.backgroundColor = color.toLowerCase();
+        }
+
+        function applyDarkMode() {
+            const isDarkMode = localStorage.getItem('darkMode') === 'true';
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            darkModeToggle.checked = isDarkMode;
+
+            if (isDarkMode) {
+                document.body.classList.add('dark-mode');
+                document.querySelector('.container').classList.add('dark-mode');
+                document.querySelectorAll('.item-box').forEach(el => el.classList.add('dark-mode'));
+                document.querySelectorAll('.square-btn').forEach(el => el.classList.add('dark-mode'));
+            }
+        }
+
+        document.getElementById('darkModeToggle').addEventListener('change', function() {
+            const isDarkMode = this.checked;
+            localStorage.setItem('darkMode', isDarkMode);
+
+            if (isDarkMode) {
+                document.body.classList.add('dark-mode');
+                document.querySelector('.container').classList.add('dark-mode');
+                document.querySelectorAll('.item-box').forEach(el => el.classList.add('dark-mode'));
+                document.querySelectorAll('.square-btn').forEach(el => el.classList.add('dark-mode'));
+            } else {
+                document.body.classList.remove('dark-mode');
+                document.querySelector('.container').classList.remove('dark-mode');
+                document.querySelectorAll('.item-box').forEach(el => el.classList.remove('dark-mode'));
+                document.querySelectorAll('.square-btn').forEach(el => el.classList.remove('dark-mode'));
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const currentColor = '<%= color %>';
+            updateColorBar(currentColor);
+
+            applyDarkMode();
+
+            setInterval(() => {
+                location.reload();
+            }, 1000000);
+        });
+    </script>
+    
+</body>
+</html>
