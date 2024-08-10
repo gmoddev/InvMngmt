@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="/dark-mode.js"></script>
+    <link rel="stylesheet" href="/styles.css">
+    <title>Inventory Management</title>
+</head>
+<body>
+    <div class="toggle-container">
+        <label class="switch">
+            <input type="checkbox" id="darkModeToggle">
+            <span class="slider"></span>
+        </label>
+        <span id="toggleLabel">Dark Mode</span>
+    </div>
+
+    <div class="container">
+        <div id="notification" class="notification"></div>
+        <h1>Inventory Management</h1>
+        <div class="color-selector">
+            <button class="color-btn purple-btn" onclick="saveColor('Purple')">Purple</button>
+            <button class="color-btn yellow-btn" onclick="saveColor('Yellow')">Yellow</button>
+            <button class="color-btn green-btn" onclick="saveColor('Green')">Green</button>
+            <button class="color-btn orange-btn" onclick="saveColor('Orange')">Orange</button>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Quantity</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="inventory-rows">
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.style.display = 'block';
+
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 5000); // Hide after 5 seconds
+        }
+
+        function switchColor(color) {
+            fetch(`/inventory?color=${color}`)
+                .then(response => response.json())
+                .then(data => {
+                    const inventoryRows = document.getElementById('inventory-rows');
+                    inventoryRows.innerHTML = '';
+
+                    data.items.forEach(item => {
+                        const row = `
+                            <tr>
+                                <td>${item.name}</td>
+                                <td class="quantity-column" id="quantity-${item.id}">${item.quantity}</td>
+                                <td>
+                                    <form onsubmit="updateQuantity(event, '${item.name}', '${color}', '${item.id}')" class="action-form">
+                                        <button type="submit" name="action" value="add" class="square-btn add-btn">Add</button>
+                                        <button type="submit" name="action" value="remove" class="square-btn remove-btn">Remove</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        `;
+                        inventoryRows.insertAdjacentHTML('beforeend', row);
+                    });
+
+                    document.querySelectorAll('.color-btn').forEach(btn => {
+                        btn.classList.remove('selected');
+                    });
+                    document.querySelector(`.${color.toLowerCase()}-btn`).classList.add('selected');
+                })
+                .catch(error => {
+                    showNotification('An error occurred while fetching the inventory', 'error');
+                    console.error('Error:', error);
+                });
+        }
+
+        function updateQuantity(event, name, color, id) {
+            event.preventDefault();
+            const action = event.submitter.value; 
+
+            fetch('/inventory/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name, action, color })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById(`quantity-${id}`).textContent = data.newQuantity;
+                    showNotification(`Quantity updated: ${data.newQuantity}`, 'success');
+                } else {
+                    showNotification(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showNotification('An error occurred while updating the quantity', 'error');
+                console.error('Error:', error);
+            });
+        }
+
+        function saveColor(color) {
+            fetch('/management/color', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ color })
+            }).then(response => {
+                if (response.ok) {
+                    showNotification('Color saved successfully', 'success');
+                    switchColor(color);
+                } else {
+                    showNotification('Failed to save the color', 'error');
+                }
+            }).catch(error => {
+                showNotification('An error occurred while saving the color', 'error');
+                console.error('Error:', error);
+            });
+        }
+
+        function applyDarkMode() {
+            const isDarkMode = localStorage.getItem('darkMode') === 'true';
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            darkModeToggle.checked = isDarkMode;
+
+            if (isDarkMode) {
+                document.body.classList.add('dark-mode');
+                document.querySelector('.container').classList.add('dark-mode');
+                document.querySelectorAll('.item-box').forEach(el => el.classList.add('dark-mode'));
+                document.querySelectorAll('.square-btn').forEach(el => el.classList.add('dark-mode'));
+            }
+        }
+
+        document.getElementById('darkModeToggle').addEventListener('change', function() {
+            const isDarkMode = this.checked;
+            localStorage.setItem('darkMode', isDarkMode);
+
+            if (isDarkMode) {
+                document.body.classList.add('dark-mode');
+                document.querySelector('.container').classList.add('dark-mode');
+                document.querySelectorAll('.item-box').forEach(el => el.classList.add('dark-mode'));
+                document.querySelectorAll('.square-btn').forEach(el => el.classList.add('dark-mode'));
+            } else {
+                document.body.classList.remove('dark-mode');
+                document.querySelector('.container').classList.remove('dark-mode');
+                document.querySelectorAll('.item-box').forEach(el => el.classList.remove('dark-mode'));
+                document.querySelectorAll('.square-btn').forEach(el => el.classList.remove('dark-mode'));
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            applyDarkMode();
+
+            const currentColor = '<%= currentColor %>';
+            switchColor(currentColor);
+        });
+    </script>
+</body>
+</html>
