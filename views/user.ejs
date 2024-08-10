@@ -8,7 +8,6 @@
     <title>Inventory Client</title>
 </head>
 <body>
-    
     <div class="container">
         <div class="color-bar" id="color-bar"></div>
         <div class="flex-grid">
@@ -23,6 +22,7 @@
                 </div>
             <% }); %>
         </div>
+        <div class="color-bar btn" id="color-bar1"></div>
     </div>
     
     <div class="toggle-container">
@@ -54,7 +54,9 @@
 
         function updateColorBar(color) {
             const colorBar = document.getElementById('color-bar');
+            const colorBar1 = document.getElementById('color-bar1');
             colorBar.style.backgroundColor = color.toLowerCase();
+            colorBar1.style.backgroundColor = color.toLowerCase();
         }
 
         function applyDarkMode() {
