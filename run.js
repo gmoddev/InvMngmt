@@ -99,6 +99,7 @@ app.get('/user', async (req, res) => {
     });
 });
 
+// Inventory System
 app.post('/inventory/update', async (req, res) => {
     const { name, action, color } = req.body;
     const db = await initializeDatabase();
