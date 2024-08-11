@@ -1,4 +1,5 @@
 Simple Inventory System
+NOTICE: This is not a secure system and is intended to be used internally and not be exposed to the web.
 
 Developed for St. Vincent de Paul to handle the backend inventory.
 
