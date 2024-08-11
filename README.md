@@ -12,3 +12,7 @@ USER PAGE
 ADMIN PAGE
 ![image](https://github.com/user-attachments/assets/42d6c185-0c2a-46fc-95a4-43cde939ae5d)
 ![image](https://github.com/user-attachments/assets/9d3a45f8-d6dc-44c0-8e8b-78a53be01f67)
+
+Installation Help
+Make sure to run `npm i` to install the requirements
+Made on npm '10.2.4'
